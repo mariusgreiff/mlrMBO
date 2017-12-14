@@ -80,9 +80,6 @@ makeMBOInfillCritEI = function(se.threshold = 1e-6) {
       model = models[[1L]]
       maximize.mult = ifelse(control$minimize, 1, -1)
       y = maximize.mult * design[, control$y.name]
-      #####
-      print(y)
-      #####
       p = predict(model, newdata = points)$data
       p.mu = maximize.mult * p$response
       p.se = p$se
