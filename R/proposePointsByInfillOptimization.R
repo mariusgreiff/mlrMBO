@@ -34,6 +34,34 @@ proposePointsByInfillOptimization = function(opt.state, par.set = NULL, control 
   if (!ch$ok) return(ch$prop)
 
   design = convertOptPathToDf(opt.path, control)
+  #####
+  if (control$multiobj.method == "parego") {
+    y = getOptPathY(opt.path)
+    if (control$multiobj.parego.normalize == "standard") {
+      y = normalize(y, method = "range", margin = 2L)
+    } else {
+      front = mco::paretoFilter(y)
+      if (nrow(front) != 1) {
+        y.max = apply(y, 2, max)
+        y.min = apply(y, 2, min)
+        front.max = apply(front, 2, max)
+        ranges = (y.max - y.min) / (front.max - y.min)
+        y = normalize(y, method = "range", margin = 2L)
+        y = y * matrix(ranges, nrow = nrow(y), ncol = ncol(y), byrow = TRUE)
+      }
+      else {
+        # FIXME What to do if the front consist only 1 point?
+        y = normalize(y, method = "range", margin = 2L)
+      }
+    }
+    w = as.vector(attr(getOptStateTasks(opt.state), "weight.mat"))
+    y = y %*% diag(w)
+    y.scalar = apply(y, 1, max) + control$multiobj.parego.rho * rowSums(y)
+    designs = cbind(design, y.scalar)
+    colnames(designs) = c(colnames(design), "y_scalar")
+    design = designs
+  }
+  #####
   infill.crit.fun = control$infill.crit$fun
   infill.opt.fun = getInfillOptFunction(control$infill.opt)
   # store time to propose single point
