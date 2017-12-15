@@ -82,6 +82,9 @@ makeMBOInfillCritEI = function(se.threshold = 1e-6) {
       assertString(control$y.name)
       y = maximize.mult * design[, control$y.name]
       assertNumeric(y, any.missing = FALSE)
+      #####
+      print(y)
+      #####
       p = predict(model, newdata = points)$data
       p.mu = maximize.mult * p$response
       p.se = p$se
